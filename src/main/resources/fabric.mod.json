@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "cobblepartyhud",
+	"version": "${version}",
+	"name": "Cobble Party HUD",
+	"description": "Client-side mod for Cobblemon: move and scale the party HUD (the six Pokémon portraits) anywhere on the screen.",
+	"authors": [
+		"AsshJyP"
+	],
+	"contact": {
+		"sources": "https://github.com/AsshJyP/cobble-party-hud"
+	},
+	"license": "MIT",
+	"icon": "assets/cobblepartyhud/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"io.github.asshjyp.cobblepartyhud.CobblePartyHud"
+		],
+		"modmenu": [
+			"io.github.asshjyp.cobblepartyhud.ModMenuIntegration"
+		]
+	},
+	"mixins": [
+		{
+			"config": "cobblepartyhud.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*",
+		"cobblemon": ">=1.7.0"
+	},
+	"recommends": {
+		"modmenu": "*"
+	}
+}

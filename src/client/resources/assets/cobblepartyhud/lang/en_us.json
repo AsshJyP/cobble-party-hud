@@ -1,0 +1,15 @@
+{
+	"key.categories.cobblepartyhud": "Cobble Party HUD",
+	"key.cobblepartyhud.edit_hud": "Move and resize party HUD",
+	"cobblepartyhud.edit.title": "Move and resize party HUD",
+	"cobblepartyhud.edit.help": "Drag to move · Wheel: size · Arrows: fine-tune (Shift = 10)",
+	"cobblepartyhud.edit.scale": "Size: ×%s",
+	"cobblepartyhud.edit.reset": "Reset",
+	"cobblepartyhud.edit.empty_party": "Your party is empty: the box shows where the party HUD will be.",
+	"cobblepartyhud.edit.disabled": "Off: the party HUD is in Cobblemon's original place. Your layout is kept.",
+	"cobblepartyhud.edit.no_mixin": "This Cobblemon version is not supported: the party HUD stays in its original place.",
+	"cobblepartyhud.edit.vertical": "Layout: Vertical",
+	"cobblepartyhud.edit.horizontal": "Layout: Horizontal",
+	"cobblepartyhud.edit.on": "Mod: On",
+	"cobblepartyhud.edit.off": "Mod: Off"
+}

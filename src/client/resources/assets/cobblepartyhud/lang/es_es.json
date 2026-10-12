@@ -1,0 +1,15 @@
+{
+	"key.categories.cobblepartyhud": "Cobble Party HUD",
+	"key.cobblepartyhud.edit_hud": "Mover y escalar el HUD de party",
+	"cobblepartyhud.edit.title": "Mover y escalar HUD de party",
+	"cobblepartyhud.edit.help": "Arrastra para mover · Rueda: tamaño · Flechas: afinar (Mayús = 10)",
+	"cobblepartyhud.edit.scale": "Tamaño: ×%s",
+	"cobblepartyhud.edit.reset": "Restablecer",
+	"cobblepartyhud.edit.empty_party": "Tu equipo está vacío: el recuadro marca dónde irá el HUD de party.",
+	"cobblepartyhud.edit.disabled": "Desactivado: el HUD de party está en su sitio original. Tu posición se guarda.",
+	"cobblepartyhud.edit.no_mixin": "Esta versión de Cobblemon no es compatible: el HUD de party se queda en su sitio original.",
+	"cobblepartyhud.edit.vertical": "Forma: Vertical",
+	"cobblepartyhud.edit.horizontal": "Forma: Horizontal",
+	"cobblepartyhud.edit.on": "Mod: Activado",
+	"cobblepartyhud.edit.off": "Mod: Desactivado"
+}
