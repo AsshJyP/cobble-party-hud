@@ -4,10 +4,17 @@ pluginManagement {
 			name = 'Fabric'
 			url = 'https://maven.fabricmc.net/'
 		}
+		maven {
+			name = 'NeoForged'
+			url = 'https://maven.neoforged.net/releases'
+		}
 		mavenCentral()
 		gradlePluginPortal()
 	}
 }
 
-// Should match your modid
+// Estructura de MultiLoader-Template (sin Architectury API): common/ con lo compartido y un subproyecto por loader
 rootProject.name = 'cobblepartyhud'
+include('common')
+include('fabric')
+include('neoforge')

@@ -1,0 +1,20 @@
+plugins {
+	id 'multiloader-loader'
+	id 'net.neoforged.moddev'
+}
+
+neoForge {
+	version = neoforge_version
+	mods {
+		"cobblepartyhud" {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+dependencies {
+	// Solo para compilar: en el juego lo pone el jugador o el pack (neoforge.mods.toml lo pide como requerido)
+	compileOnly "com.cobblemon:neoforge:${cobblemon_version}"
+	// Cobblemon está escrito en Kotlin: javac necesita su biblioteca estándar para leer sus clases (en el juego la pone Kotlin for Forge)
+	compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
+}

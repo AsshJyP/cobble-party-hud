@@ -15,7 +15,7 @@
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"io.github.asshjyp.cobblepartyhud.CobblePartyHud"
+			"io.github.asshjyp.cobblepartyhud.CobblePartyHudFabric"
 		],
 		"modmenu": [
 			"io.github.asshjyp.cobblepartyhud.ModMenuIntegration"

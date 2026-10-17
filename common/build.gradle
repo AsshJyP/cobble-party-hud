@@ -1,0 +1,35 @@
+// Código compartido: compila contra Minecraft vanilla con nombres de Mojang (NeoForm) y contra el jar de Cobblemon
+// para NeoForge, que también usa nombres de Mojang. No se publica: fabric/ y neoforge/ compilan estas fuentes.
+plugins {
+	id 'multiloader-common'
+	id 'net.neoforged.moddev'
+}
+
+neoForge {
+	neoFormVersion = neo_form_version
+}
+
+dependencies {
+	compileOnly 'org.spongepowered:mixin:0.8.5'
+	// Fabric Loader y NeoForge ya traen MixinExtras: aquí solo para compilar
+	compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+	compileOnly "com.cobblemon:neoforge:${cobblemon_version}"
+	// Cobblemon está escrito en Kotlin: javac necesita su biblioteca estándar para leer sus clases (en el juego la pone Kotlin for Forge)
+	compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
+}
+
+configurations {
+	commonJava {
+		canBeResolved = false
+		canBeConsumed = true
+	}
+	commonResources {
+		canBeResolved = false
+		canBeConsumed = true
+	}
+}
+
+artifacts {
+	commonJava sourceSets.main.java.sourceDirectories.singleFile
+	commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}

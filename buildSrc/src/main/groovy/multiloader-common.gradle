@@ -1,0 +1,49 @@
+// Común a los tres subproyectos (adaptado de MultiLoader-Template, rama 1.21.1)
+plugins {
+	id 'java-library'
+}
+
+base {
+	archivesName = "${mod_id}-${project.name}"
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+	it.options.encoding = 'UTF-8'
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		name = 'ImpactDev'   // Cobblemon
+		url = 'https://maven.impactdev.net/repository/development/'
+	}
+	maven {
+		name = 'TerraformersMC'   // Mod Menu
+		url = 'https://maven.terraformersmc.com/releases/'
+	}
+	maven {
+		name = 'Sponge'   // Mixin (solo para compilar common/)
+		url = 'https://repo.spongepowered.org/repository/maven-public/'
+	}
+}
+
+jar {
+	from(rootProject.file('LICENSE')) {
+		rename { "${it}_${mod_id}" }
+	}
+}
+
+processResources {
+	def props = [version: project.version]
+	inputs.properties(props)
+	filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml']) {
+		expand props
+	}
+}

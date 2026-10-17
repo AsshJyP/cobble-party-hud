@@ -1,0 +1,39 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/AsshJyP/cobble-party-hud/issues"
+
+[[mods]]
+modId = "cobblepartyhud"
+version = "${version}"
+displayName = "Cobble Party HUD"
+authors = "AsshJyP"
+displayURL = "https://github.com/AsshJyP/cobble-party-hud"
+logoFile = "assets/cobblepartyhud/icon.png"
+description = '''Client-side mod for Cobblemon: move and scale the party HUD (the six Pokémon portraits) anywhere on the screen.'''
+# Solo de cliente: el servidor no necesita tenerlo y no debe marcarse como incompatible en la lista de servidores
+displayTest = "IGNORE_ALL_VERSION"
+
+[[mixins]]
+config = "cobblepartyhud.mixins.json"
+
+[[dependencies.cobblepartyhud]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.cobblepartyhud]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.cobblepartyhud]]
+modId = "cobblemon"
+type = "required"
+versionRange = "[1.7.0,)"
+ordering = "AFTER"
+side = "CLIENT"

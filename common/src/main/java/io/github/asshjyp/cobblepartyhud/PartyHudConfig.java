@@ -3,7 +3,6 @@ package io.github.asshjyp.cobblepartyhud;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
-import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -18,7 +17,7 @@ import java.nio.file.Path;
  */
 public final class PartyHudConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve(CobblePartyHud.MOD_ID + ".json");
+	private static final Path PATH = Services.PLATFORM.getConfigDir().resolve(CobblePartyHud.MOD_ID + ".json");
 	public static final int MAX_OFFSET = 999;
 	public static final float MIN_SCALE = 0.5f;
 	public static final float MAX_SCALE = 2.0f;
