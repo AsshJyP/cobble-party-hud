@@ -50,7 +50,7 @@ public final class PartyHudConfig {
 
 	// Gson ignora este campo al leer; solo sirve de ayuda a quien edite el archivo
 	@SuppressWarnings("unused")
-	private String _info = "Lo más cómodo es la pantalla \"Mover y escalar HUD\" (tecla Y o Mod Menu). enabled: false deja el HUD de party como en Cobblemon. hudAnchor: TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, RIGHT, BOTTOM_LEFT, BOTTOM o BOTTOM_RIGHT (LEFT es el sitio original). hudOffsetX/hudOffsetY lo separan de ese punto (en píxeles de la interfaz) y hudScale es su tamaño (0.5 a 2). orientation: VERTICAL (como Cobblemon) u HORIZONTAL (los 6 en fila).";
+	private String _info = "Lo más cómodo es la pantalla \"Mover y escalar HUD\" (tecla Y, o el botón de configuración de Mod Menu en Fabric o de la lista de mods en NeoForge). enabled: false deja el HUD de party como en Cobblemon. hudAnchor: TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, RIGHT, BOTTOM_LEFT, BOTTOM o BOTTOM_RIGHT (LEFT es el sitio original). hudOffsetX/hudOffsetY lo separan de ese punto (en píxeles de la interfaz) y hudScale es su tamaño (0.5 a 2). orientation: VERTICAL (como Cobblemon) u HORIZONTAL (los 6 en fila).";
 
 	public boolean enabled = true;
 	public HudAnchor hudAnchor = HudAnchor.LEFT;

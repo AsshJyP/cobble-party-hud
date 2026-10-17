@@ -1,9 +1,9 @@
 # Cobble Party HUD
 
-Mod **solo de cliente** para Minecraft **1.21.1 (Fabric)** con **Cobblemon 1.7.x**.
+Mod **solo de cliente** para Minecraft **1.21.1 (Fabric y NeoForge)** con **Cobblemon 1.7.3 o posterior** (probado hasta 1.8.2).
 
 - Mueve y escala el HUD de party de Cobblemon (los seis retratos) a cualquier parte de la pantalla.
-- Pantalla "Mover y escalar HUD" (tecla **Y** o Mod Menu): arrastrar con el ratón, rueda para el tamaño (×0.5–×2) y flechas para afinar.
+- Pantalla "Mover y escalar HUD" (tecla **Y**, Mod Menu en Fabric o el botón "Config" de la lista de mods en NeoForge): arrastrar con el ratón, rueda para el tamaño (×0.5–×2) y flechas para afinar.
 - Se pega al punto más cercano de la pantalla (esquinas, centro de cada borde o centro), así se adapta a otra resolución o escala de interfaz.
 - Forma **vertical** (como Cobblemon) u **horizontal** (los seis en fila, con los avisos de nivel arriba o abajo).
 - Pegado a la derecha, los slots se dibujan **en espejo** para que su lado plano quede contra el borde.
@@ -13,11 +13,14 @@ Mod **solo de cliente** para Minecraft **1.21.1 (Fabric)** con **Cobblemon 1.7.x
 
 Solo cambia dónde y a qué tamaño se dibuja lo que Cobblemon ya muestra; no añade información.
 
-- Requiere: Fabric Loader ≥ 0.16.0, Fabric API y Cobblemon ≥ 1.7.0. Recomendado: Mod Menu.
+- Fabric: Fabric Loader ≥ 0.16.0, Fabric API y Cobblemon ≥ 1.7.3. Recomendado: Mod Menu.
+- NeoForge: NeoForge 21.1.x y Cobblemon ≥ 1.7.3 (que a su vez necesita Kotlin for Forge).
 - Licencia: MIT. Pokémon es una marca de Nintendo/Game Freak/The Pokémon Company.
 
 ## Compilar
 ```
 .\gradlew build
 ```
-El `.jar` queda en `build/libs/`.
+Salen dos jars: `fabric/build/libs/cobblepartyhud-fabric-<versión>.jar` y `neoforge/build/libs/cobblepartyhud-neoforge-<versión>.jar`.
+
+Estructura multi-loader (estilo MultiLoader-Template, sin Architectury API): `common/` tiene todo el HUD, los mixins y el editor; `fabric/` y `neoforge/` solo el arranque y la integración con cada loader.
