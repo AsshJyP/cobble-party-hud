@@ -49,8 +49,10 @@ public final class PartyHudTransform {
 	private static boolean caps;
 	private static boolean portraitUnflipped;
 	private static GuiGraphics graphics;
-	/** Ancho del remate del lado plano (en píxeles de la textura). */
-	private static final int CAP_WIDTH = 4;
+	/** Ancho del remate del lado plano (en píxeles de la textura): panel, brillo y contorno. */
+	private static final int CAP_WIDTH = 3;
+	/** Color del contorno de los slots de Cobblemon (47, 47, 47). */
+	private static final int OUTLINE_COLOR = 0xFF2F2F2F;
 	/** Avisos de movimiento nuevo / evolución: 37×20 a escala 0.5. */
 	private static final float NOTIFICATION_WIDTH = 18.5f;
 	private static final float NOTIFICATION_HEIGHT = 10f;
@@ -62,6 +64,13 @@ public final class PartyHudTransform {
 	private static boolean notificationsBelow;
 	/** Avisos ya dibujados en el slot actual (para apilar evolución + movimiento sin solaparlos). */
 	private static int notificationsInSlot;
+	/** Texto que Cobblemon 1.8 dibuja a la derecha del slot ("+N EXP", x = 57): se trata como un aviso más. */
+	private static final float SIDE_TEXT_X = 50f;
+	private static final float EXP_TEXT_X = 57f;
+	/** Diagnóstico de horizontal: se dibujó algún slot / el enganche de indexOffsetY se ejecutó en este render. */
+	private static boolean slotDrawn;
+	private static boolean slotHookRan;
+	private static boolean warnedNoSlotHook;
 	private static boolean loggedActive;
 
 	/**
@@ -190,17 +199,21 @@ public final class PartyHudTransform {
 		slotX = 0;
 		slotY = 0;
 		notificationsInSlot = 0;
+		slotDrawn = false;
+		slotHookRan = false;
 		portraitUnflipped = false;
 		active = true;
 	}
 
 	/**
-	 * Cobblemon calcula 34·i (local 24 de render) al empezar cada slot. En horizontal se corre pose() para que el
-	 * slot i quede a la derecha del anterior (+i·SLOT_STEP_X) y a la altura del primero (−34·i). Se aplica como
-	 * diferencia con el slot anterior: aquí pose() es la nuestra (Cobblemon aún no ha hecho push en este slot).
+	 * Cobblemon calcula indexOffsetY = 34·i al empezar cada slot (local 24 en 1.7.3, 25 en 1.8: por eso el mixin la
+	 * busca por nombre). En horizontal se corre pose() para que el slot i quede a la derecha del anterior
+	 * (+i·SLOT_STEP_X) y a la altura del primero (−34·i). Se aplica como diferencia con el slot anterior: aquí pose()
+	 * es la nuestra (Cobblemon aún no ha hecho push en este slot).
 	 */
 	public static int slotOffset(int offsetY) {
 		if (!active || !horizontal) return offsetY;
+		slotHookRan = true;
 		int index = offsetY / SLOT_STEP_Y;
 		float targetX = index * SLOT_STEP_X;
 		float targetY = -offsetY;
@@ -218,6 +231,12 @@ public final class PartyHudTransform {
 		active = false;
 		graphics.pose().popPose();
 		PartyHudTransform.graphics = null;
+		// Con require = 0 un enganche que no encuentra su sitio se salta en silencio: aquí al menos queda en el log
+		if (horizontal && slotDrawn && !slotHookRan && !warnedNoSlotHook) {
+			warnedNoSlotHook = true;
+			CobblePartyHud.LOGGER.warn("[Cobble Party HUD] La forma horizontal no encontró la variable indexOffsetY en "
+					+ "PartyOverlay.render (¿otra versión de Cobblemon?): los slots se quedan en columna.");
+		}
 	}
 
 	/**
@@ -270,13 +289,6 @@ public final class PartyHudTransform {
 		return texture.getPath().startsWith("textures/gui/party/party_slot_notification");
 	}
 
-	/**
-	 * Columnas donde la textura tiene su chaflán: el seleccionado ("_active") es un slot 6 px más ancho con el
-	 * borde en 48–51, no en 42–45.
-	 */
-	private static int capOffset(ResourceLocation texture) {
-		return texture.getPath().contains("_active") ? 6 : 0;
-	}
 
 	/**
 	 * Horizontal: Cobblemon pone los avisos (movimiento nuevo, evolución) a la derecha del slot (x + 56.5, 18.5 de
@@ -317,6 +329,7 @@ public final class PartyHudTransform {
 			return;
 		}
 		boolean background = isSlotBackground(texture);
+		if (background) slotDrawn = true;
 		if (horizontal && isCollapsed(texture)) {
 			return; // en fila, la pestaña del slot vacío (5 px, pensada para el borde) solo estorba
 		}
@@ -346,37 +359,65 @@ public final class PartyHudTransform {
 	}
 
 	/**
-	 * Remate del lado plano: las columnas 42–45 (borde y chaflán del panel, filas 0–23) y 52–55 (punta de la franja
-	 * inferior, filas 24–29) de la propia textura, reflejadas a la izquierda de x. Al usar la misma textura sirve
-	 * para normal, seleccionado y debilitado, y para resource packs que respeten la forma.
+	 * Remate del lado plano, a la izquierda de x (en espejo queda a la derecha).
+	 * <ul>
+	 * <li>Slot normal o debilitado: las columnas 43–45 (panel, brillo y contorno con su chaflán, filas 0–23) y 53–55
+	 * (punta de la franja inferior, filas 24–29) de la propia textura, reflejadas. La columna 42 no: es la sombra
+	 * del marco del retrato y dejaba una línea oscura (borde doble).</li>
+	 * <li>Seleccionado ("_active"): esa textura ya trae brillo en su lado izquierdo y la punta inferior en diagonal;
+	 * solo le falta el contorno, una columna oscura en las filas 1–26.</li>
+	 * </ul>
 	 */
 	private static void drawCap(PoseStack pose, ResourceLocation texture, float x, float y) {
 		pose.pushPose();
 		pose.translate(x, y, 0);
-		pose.scale(-1, 1, 1);
 		RenderSystem.disableCull();
-		int offset = capOffset(texture);
-		graphics.blit(texture, 0, 0, 42 + offset, 0, CAP_WIDTH, 24, 62, 30);
-		graphics.blit(texture, 0, 24, 52 + offset, 24, CAP_WIDTH, 6, 62, 30);
+		if (texture.getPath().contains("_active")) {
+			graphics.fill(-1, 1, 0, 27, OUTLINE_COLOR);
+		} else {
+			pose.scale(-1, 1, 1);
+			graphics.blit(texture, 0, 0, 43, 0, CAP_WIDTH, 24, 62, 30);
+			graphics.blit(texture, 0, 24, 53, 24, CAP_WIDTH, 6, 62, 30);
+		}
 		RenderSystem.enableCull();
 		pose.popPose();
 	}
 
 	/** drawScaledText de Cobblemon: x es el inicio (o el centro si centered) y el ancho es el del texto × textScale. */
-	public static void text(PoseStack pose, Component text, ResourceLocation font, float x, float textScale, boolean centered, Runnable original) {
-		if (!active || !mirrored) {
+	public static void text(PoseStack pose, Component text, ResourceLocation font, float x, float y, float textScale, boolean centered, Runnable original) {
+		if (!active || (!mirrored && !(horizontal && x >= SIDE_TEXT_X))) {
 			original.run();
 			return;
 		}
-		float width = 0;
-		if (!centered) {
-			Component styled = font == null ? text : text.copy().withStyle(style -> style.withFont(font));
-			width = Minecraft.getInstance().font.width(styled) * textScale;
-		}
+		Component styled = font == null ? text : text.copy().withStyle(style -> style.withFont(font));
+		float textWidth = Minecraft.getInstance().font.width(styled) * textScale;
 		pose.pushPose();
-		unflip(pose, x, width);
+		if (mirrored) {
+			unflip(pose, x, centered ? 0 : textWidth);
+		} else {
+			moveSideText(pose, x, y, textWidth, textScale, centered);
+		}
 		original.run();
 		pose.popPose();
+	}
+
+	/**
+	 * Horizontal: el texto que Cobblemon 1.8 dibuja a la derecha del slot ("+N EXP" en x = 57 + seleccionado) tapaba
+	 * al slot siguiente. Va como un aviso más: centrado sobre su slot y apilado con los de movimiento y evolución.
+	 */
+	private static void moveSideText(PoseStack pose, float x, float y, float textWidth, float textScale, boolean centered) {
+		float slotTop = vanillaTop(hudScreenHeight) - slotY;
+		float height = Minecraft.getInstance().font.lineHeight * textScale;
+		float selectedShift = Math.clamp(x - EXP_TEXT_X, 0, 6);
+		float centerX = (SLOT_WIDTH - 6) / 2f + selectedShift;
+		float targetLeft = centerX - textWidth / 2;
+		float currentLeft = centered ? x - textWidth / 2 : x;
+		float stack = notificationsInSlot * (NOTIFICATION_HEIGHT + NOTIFICATION_STACK_GAP);
+		notificationsInSlot++;
+		float targetTop = notificationsBelow
+				? slotTop + SLOT_HEIGHT + NOTIFICATION_GAP + stack
+				: slotTop - NOTIFICATION_GAP - height - stack;
+		pose.translate(targetLeft - currentLeft, targetTop - y, 0);
 	}
 
 	/** renderScaledGuiItemIcon: objeto de 16×16 × itemScale a partir de x. */

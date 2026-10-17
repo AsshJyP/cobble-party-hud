@@ -34,8 +34,11 @@ public class PartyOverlayMixin {
 		PartyHudTransform.end(graphics);
 	}
 
-	/** Orientación horizontal: local 24 = 34·i, la altura de cada slot (se guarda dos veces por slot con Pokémon). */
-	@ModifyVariable(method = "render", at = @At("STORE"), index = 24)
+	/**
+	 * Orientación horizontal: indexOffsetY = 34·i, la altura de cada slot (se guarda dos veces por slot con Pokémon).
+	 * Por NOMBRE, no por número: es la local 24 en Cobblemon 1.7.3 y la 25 en 1.8.x (en 1.8 la 24 es selectedOffsetX).
+	 */
+	@ModifyVariable(method = "render", at = @At("STORE"), name = "indexOffsetY")
 	private int cobblepartyhud$slotOffset(int offsetY) {
 		return PartyHudTransform.slotOffset(offsetY);
 	}
@@ -74,7 +77,7 @@ public class PartyOverlayMixin {
 			float scale, Number opacity, int maxCharacterWidth, int colour, boolean centered, boolean shadow,
 			Integer mouseX, Integer mouseY, int mask, Object marker, Operation<Void> original) {
 		PartyHudTransform.text(graphics.pose(), text, (mask & (1 << 1)) != 0 ? null : font,
-				x == null ? 0 : x.floatValue(), (mask & (1 << 5)) != 0 ? 1f : scale,
+				x == null ? 0 : x.floatValue(), y == null ? 0 : y.floatValue(), (mask & (1 << 5)) != 0 ? 1f : scale,
 				(mask & (1 << 9)) == 0 && centered,
 				() -> original.call(graphics, font, text, x, y, scale, opacity, maxCharacterWidth, colour, centered, shadow,
 						mouseX, mouseY, mask, marker));
