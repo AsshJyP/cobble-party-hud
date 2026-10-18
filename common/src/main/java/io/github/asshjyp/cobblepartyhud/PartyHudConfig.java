@@ -48,9 +48,28 @@ public final class PartyHudConfig {
 	/** Cómo se colocan los 6 slots: en columna (como Cobblemon) o en fila. */
 	public enum Orientation { VERTICAL, HORIZONTAL }
 
+	/**
+	 * Dónde quedan los Pokémon dentro del hueco de 6 slots cuando hay menos de 6: START (izquierda en horizontal,
+	 * arriba en vertical) deja cada uno en su ranura, como Cobblemon; CENTER y END los juntan en el centro o al final.
+	 */
+	public enum Alignment {
+		START(0f), CENTER(0.5f), END(1f);
+
+		/** Fracción de los slots libres que queda antes del primer Pokémon. */
+		public final float freeBefore;
+
+		Alignment(float freeBefore) {
+			this.freeBefore = freeBefore;
+		}
+
+		public Alignment next() {
+			return values()[(ordinal() + 1) % values().length];
+		}
+	}
+
 	// Gson ignora este campo al leer; solo sirve de ayuda a quien edite el archivo
 	@SuppressWarnings("unused")
-	private String _info = "Lo más cómodo es la pantalla \"Mover y escalar HUD\" (tecla Y, o el botón de configuración de Mod Menu en Fabric o de la lista de mods en NeoForge). enabled: false deja el HUD de party como en Cobblemon. hudAnchor: TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, RIGHT, BOTTOM_LEFT, BOTTOM o BOTTOM_RIGHT (LEFT es el sitio original). hudOffsetX/hudOffsetY lo separan de ese punto (en píxeles de la interfaz) y hudScale es su tamaño (0.5 a 2). orientation: VERTICAL (como Cobblemon) u HORIZONTAL (los 6 en fila).";
+	private String _info = "Lo más cómodo es la pantalla \"Mover y escalar HUD\" (tecla Y, o el botón de configuración de Mod Menu en Fabric o de la lista de mods en NeoForge). enabled: false deja el HUD de party como en Cobblemon. hudAnchor: TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, RIGHT, BOTTOM_LEFT, BOTTOM o BOTTOM_RIGHT (LEFT es el sitio original). hudOffsetX/hudOffsetY lo separan de ese punto (en píxeles de la interfaz) y hudScale es su tamaño (0.5 a 2). orientation: VERTICAL (como Cobblemon) u HORIZONTAL (los 6 en fila). alignment, con menos de 6 Pokémon: START (izquierda/arriba, cada uno en su ranura), CENTER o END (derecha/abajo).";
 
 	public boolean enabled = true;
 	public HudAnchor hudAnchor = HudAnchor.LEFT;
@@ -58,6 +77,7 @@ public final class PartyHudConfig {
 	public int hudOffsetY = 0;
 	public float hudScale = 1.0f;
 	public Orientation orientation = Orientation.VERTICAL;
+	public Alignment alignment = Alignment.START;
 
 	public static PartyHudConfig load() {
 		PartyHudConfig config = new PartyHudConfig();
@@ -83,6 +103,7 @@ public final class PartyHudConfig {
 	/** Vuelve al sitio, tamaño y orientación originales de Cobblemon. */
 	public void reset() {
 		orientation = Orientation.VERTICAL;
+		alignment = Alignment.START;
 		hudAnchor = HudAnchor.LEFT;
 		hudOffsetX = 0;
 		hudOffsetY = 0;
@@ -93,6 +114,7 @@ public final class PartyHudConfig {
 	private PartyHudConfig sanitized() {
 		if (hudAnchor == null) hudAnchor = HudAnchor.LEFT;
 		if (orientation == null) orientation = Orientation.VERTICAL;
+		if (alignment == null) alignment = Alignment.START;
 		hudOffsetX = Math.clamp(hudOffsetX, -MAX_OFFSET, MAX_OFFSET);
 		hudOffsetY = Math.clamp(hudOffsetY, -MAX_OFFSET, MAX_OFFSET);
 		hudScale = Float.isNaN(hudScale) ? 1.0f : Math.clamp(hudScale, MIN_SCALE, MAX_SCALE);

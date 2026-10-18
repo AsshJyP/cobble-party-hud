@@ -1,5 +1,6 @@
 package io.github.asshjyp.cobblepartyhud;
 
+import com.cobblemon.mod.common.client.CobblemonClient;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -43,6 +44,11 @@ public final class PartyHudTransform {
 	/** Horizontal: desplazamiento ya aplicado en pose() para el slot que se está dibujando (unidades sin escalar). */
 	private static float slotX, slotY;
 	private static boolean horizontal;
+	/**
+	 * Alineación CENTER/END: ranura (en pasos de slot, puede ser media) donde se dibuja el slot i, o −1 si está vacío
+	 * (no se mueve y su pestaña no se dibuja). Con START es null y cada slot va en su ranura.
+	 */
+	private static float[] slotTargets;
 	/** Vertical pegado a la derecha: slots en espejo. */
 	private static boolean mirrored;
 	/** Dibujar el remate en el lado plano de cada slot. */
@@ -182,6 +188,7 @@ public final class PartyHudTransform {
 		ty = box[1] - scale * vanillaTop(screenHeight);
 
 		horizontal = config.orientation == PartyHudConfig.Orientation.HORIZONTAL;
+		slotTargets = slotTargets(config.alignment);
 		// En vertical pegado a la derecha, el slot se dibuja en espejo: su lado plano queda contra el borde derecho
 		mirrored = !horizontal && config.hudAnchor.column == 2;
 		// Remate en el lado plano cuando no toca el borde de la pantalla (en horizontal, siempre)
@@ -205,18 +212,41 @@ public final class PartyHudTransform {
 		active = true;
 	}
 
+	/** Ranuras de destino de los Pokémon presentes, juntos y repartidos según la alineación (null con START). */
+	private static float[] slotTargets(PartyHudConfig.Alignment alignment) {
+		if (alignment == PartyHudConfig.Alignment.START) return null;
+		var slots = CobblemonClient.INSTANCE.getStorage().getParty().getSlots();
+		int present = 0;
+		for (int i = 0; i < Math.min(SLOTS, slots.size()); i++) {
+			if (slots.get(i) != null) present++;
+		}
+		float[] targets = new float[SLOTS];
+		float next = (SLOTS - present) * alignment.freeBefore;
+		for (int i = 0; i < SLOTS; i++) {
+			boolean filled = i < slots.size() && slots.get(i) != null;
+			targets[i] = filled ? next++ : -1;
+		}
+		return targets;
+	}
+
 	/**
 	 * Cobblemon calcula indexOffsetY = 34·i al empezar cada slot (local 24 en 1.7.3, 25 en 1.8: por eso el mixin la
 	 * busca por nombre). En horizontal se corre pose() para que el slot i quede a la derecha del anterior
-	 * (+i·SLOT_STEP_X) y a la altura del primero (−34·i). Se aplica como diferencia con el slot anterior: aquí pose()
-	 * es la nuestra (Cobblemon aún no ha hecho push en este slot).
+	 * (+i·SLOT_STEP_X) y a la altura del primero (−34·i). Con alineación CENTER/END el slot va a su ranura de
+	 * {@link #slotTargets} en vez de la i (en vertical, solo se corre en y). Se aplica como diferencia con el slot
+	 * anterior: aquí pose() es la nuestra (Cobblemon aún no ha hecho push en este slot).
 	 */
 	public static int slotOffset(int offsetY) {
-		if (!active || !horizontal) return offsetY;
+		if (!active || (!horizontal && slotTargets == null)) return offsetY;
 		slotHookRan = true;
 		int index = offsetY / SLOT_STEP_Y;
-		float targetX = index * SLOT_STEP_X;
-		float targetY = -offsetY;
+		float target = index;
+		if (slotTargets != null && index >= 0 && index < SLOTS) {
+			target = slotTargets[index];
+			if (target < 0) return offsetY; // vacío: no se dibuja nada suyo (ver blit)
+		}
+		float targetX = horizontal ? target * SLOT_STEP_X : 0;
+		float targetY = horizontal ? -offsetY : (target - index) * SLOT_STEP_Y;
 		if (targetX != slotX || targetY != slotY) {
 			graphics.pose().translate(targetX - slotX, targetY - slotY, 0);
 			slotX = targetX;
@@ -232,10 +262,10 @@ public final class PartyHudTransform {
 		graphics.pose().popPose();
 		PartyHudTransform.graphics = null;
 		// Con require = 0 un enganche que no encuentra su sitio se salta en silencio: aquí al menos queda en el log
-		if (horizontal && slotDrawn && !slotHookRan && !warnedNoSlotHook) {
+		if ((horizontal || slotTargets != null) && slotDrawn && !slotHookRan && !warnedNoSlotHook) {
 			warnedNoSlotHook = true;
-			CobblePartyHud.LOGGER.warn("[Cobble Party HUD] La forma horizontal no encontró la variable indexOffsetY en "
-					+ "PartyOverlay.render (¿otra versión de Cobblemon?): los slots se quedan en columna.");
+			CobblePartyHud.LOGGER.warn("[Cobble Party HUD] La forma horizontal y la alineación no encontraron la variable "
+					+ "indexOffsetY en PartyOverlay.render (¿otra versión de Cobblemon?): los slots se quedan en su sitio.");
 		}
 	}
 
@@ -330,8 +360,10 @@ public final class PartyHudTransform {
 		}
 		boolean background = isSlotBackground(texture);
 		if (background) slotDrawn = true;
-		if (horizontal && isCollapsed(texture)) {
-			return; // en fila, la pestaña del slot vacío (5 px, pensada para el borde) solo estorba
+		if ((horizontal || slotTargets != null) && isCollapsed(texture)) {
+			// En fila, la pestaña del slot vacío (5 px, pensada para el borde) solo estorba; con los Pokémon juntos
+			// en el centro o al final, su ranura ya la ocupa otro
+			return;
 		}
 		if (horizontal && isNotification(texture)) {
 			pose.pushPose();

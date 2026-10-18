@@ -6,6 +6,7 @@ Mod **solo de cliente** para Minecraft **1.21.1 (Fabric y NeoForge)** con **Cobb
 - Pantalla "Mover y escalar HUD" (tecla **Y**, Mod Menu en Fabric o el botón "Config" de la lista de mods en NeoForge): arrastrar con el ratón, rueda para el tamaño (×0.5–×2) y flechas para afinar.
 - Se pega al punto más cercano de la pantalla (esquinas, centro de cada borde o centro), así se adapta a otra resolución o escala de interfaz.
 - Forma **vertical** (como Cobblemon) u **horizontal** (los seis en fila, con los avisos de nivel arriba o abajo).
+- **Alineación** con menos de 6 Pokémon: izquierda/centro/derecha en horizontal y arriba/centro/abajo en vertical. Con centro o derecha/abajo, los Pokémon se juntan dentro del hueco de 6 y sus avisos (nivel, "+N EXP", evolución) van con ellos.
 - Pegado a la derecha, los slots se dibujan **en espejo** para que su lado plano quede contra el borde.
 - Botón para desactivarlo: el HUD vuelve a su sitio original sin perder tu posición.
 - En la pantalla de colocación se ven también los HUD de Cobble Hunt Log y Cobble EV Tracker, si están instalados, para colocarlos juntos.

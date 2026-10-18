@@ -29,6 +29,7 @@ public class HudEditScreen extends Screen {
 	private static final int OUTLINE_IDLE = 0xA0FFFFFF;
 
 	private final Screen parent;
+	private Button alignment;
 	private boolean dragging;
 	private double grabX;
 	private double grabY;
@@ -58,6 +59,7 @@ public class HudEditScreen extends Screen {
 					int[] after = bounds();
 					moveTo(before[0], before[1], after[2], after[3]);
 					button.setMessage(orientationLabel());
+					alignment.setMessage(alignmentLabel());
 				})
 				.bounds(left + BUTTON_WIDTH + 4, y, BUTTON_WIDTH, BUTTON_HEIGHT)
 				.build());
@@ -71,8 +73,16 @@ public class HudEditScreen extends Screen {
 					dragging = false;
 					rebuildWidgets();
 				})
-				.bounds(width / 2 - BUTTON_WIDTH / 2, y + BUTTON_HEIGHT + 4, BUTTON_WIDTH, BUTTON_HEIGHT)
+				.bounds(width / 2 - BUTTON_WIDTH - 2, y + BUTTON_HEIGHT + 4, BUTTON_WIDTH, BUTTON_HEIGHT)
 				.build());
+		// Con menos de 6 Pokémon: juntos al principio (como Cobblemon), en el centro o al final del hueco de 6
+		alignment = addRenderableWidget(Button.builder(alignmentLabel(), button -> {
+					CobblePartyHud.CONFIG.alignment = CobblePartyHud.CONFIG.alignment.next();
+					button.setMessage(alignmentLabel());
+				})
+				.bounds(width / 2 + 2, y + BUTTON_HEIGHT + 4, BUTTON_WIDTH, BUTTON_HEIGHT)
+				.build());
+		alignment.active = CobblePartyHud.CONFIG.enabled;
 	}
 
 	private static Component enabledLabel() {
@@ -82,6 +92,19 @@ public class HudEditScreen extends Screen {
 	private static Component orientationLabel() {
 		return Component.translatable(CobblePartyHud.CONFIG.orientation == PartyHudConfig.Orientation.HORIZONTAL
 				? "cobblepartyhud.edit.horizontal" : "cobblepartyhud.edit.vertical");
+	}
+
+	/** Izquierda/centro/derecha en horizontal, arriba/centro/abajo en vertical. */
+	private static Component alignmentLabel() {
+		PartyHudConfig config = CobblePartyHud.CONFIG;
+		boolean horizontal = config.orientation == PartyHudConfig.Orientation.HORIZONTAL;
+		String side = switch (config.alignment) {
+			case START -> horizontal ? "left" : "top";
+			case CENTER -> "center";
+			case END -> horizontal ? "right" : "bottom";
+		};
+		return Component.translatable("cobblepartyhud.edit.alignment",
+				Component.translatable("cobblepartyhud.edit.alignment." + side));
 	}
 
 	/** El HUD nunca más grande que la pantalla: baja la escala de décima en décima hasta que quepa. */

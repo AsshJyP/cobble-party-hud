@@ -11,5 +11,11 @@
 	"cobblepartyhud.edit.vertical": "Layout: Vertical",
 	"cobblepartyhud.edit.horizontal": "Layout: Horizontal",
 	"cobblepartyhud.edit.on": "Mod: On",
-	"cobblepartyhud.edit.off": "Mod: Off"
+	"cobblepartyhud.edit.off": "Mod: Off",
+	"cobblepartyhud.edit.alignment": "Align: %s",
+	"cobblepartyhud.edit.alignment.left": "Left",
+	"cobblepartyhud.edit.alignment.center": "Center",
+	"cobblepartyhud.edit.alignment.right": "Right",
+	"cobblepartyhud.edit.alignment.top": "Top",
+	"cobblepartyhud.edit.alignment.bottom": "Bottom"
 }

@@ -11,5 +11,11 @@
 	"cobblepartyhud.edit.vertical": "Forma: Vertical",
 	"cobblepartyhud.edit.horizontal": "Forma: Horizontal",
 	"cobblepartyhud.edit.on": "Mod: Activado",
-	"cobblepartyhud.edit.off": "Mod: Desactivado"
+	"cobblepartyhud.edit.off": "Mod: Desactivado",
+	"cobblepartyhud.edit.alignment": "Alineación: %s",
+	"cobblepartyhud.edit.alignment.left": "Izquierda",
+	"cobblepartyhud.edit.alignment.center": "Centro",
+	"cobblepartyhud.edit.alignment.right": "Derecha",
+	"cobblepartyhud.edit.alignment.top": "Arriba",
+	"cobblepartyhud.edit.alignment.bottom": "Abajo"
 }
