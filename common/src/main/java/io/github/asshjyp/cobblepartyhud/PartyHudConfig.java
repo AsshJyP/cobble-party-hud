@@ -16,11 +16,15 @@ import java.nio.file.Path;
  * si no existe, se crea con los valores por defecto (el HUD en su sitio de Cobblemon).
  */
 public final class PartyHudConfig {
-	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 	private static final Path PATH = Services.PLATFORM.getConfigDir().resolve(CobblePartyHud.MOD_ID + ".json");
 	public static final int MAX_OFFSET = 999;
 	public static final float MIN_SCALE = 0.5f;
 	public static final float MAX_SCALE = 2.0f;
+	/** Blanco: el panel de la ranura se dibuja sin teñir (el gris de Cobblemon). */
+	public static final int NO_COLOR = 0xFFFFFF;
+	public static final int MIN_OPACITY = 30;
+	private static final int SLOTS = 6;
 
 	/**
 	 * Punto de la pantalla al que se pega el HUD: las 4 esquinas, el centro de cada borde y el centro.
@@ -69,7 +73,7 @@ public final class PartyHudConfig {
 
 	// Gson ignora este campo al leer; solo sirve de ayuda a quien edite el archivo
 	@SuppressWarnings("unused")
-	private String _info = "Lo más cómodo es la pantalla \"Mover y escalar HUD\" (tecla Y, o el botón de configuración de Mod Menu en Fabric o de la lista de mods en NeoForge). enabled: false deja el HUD de party como en Cobblemon. hudAnchor: TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, RIGHT, BOTTOM_LEFT, BOTTOM o BOTTOM_RIGHT (LEFT es el sitio original). hudOffsetX/hudOffsetY lo separan de ese punto (en píxeles de la interfaz) y hudScale es su tamaño (0.5 a 2). orientation: VERTICAL (como Cobblemon) u HORIZONTAL (los 6 en fila). alignment, con menos de 6 Pokémon: START (izquierda/arriba, cada uno en su ranura), CENTER o END (derecha/abajo).";
+	private String _info = "Lo más cómodo es la pantalla \"Mover y escalar HUD\" (tecla Y, o el botón de configuración de Mod Menu en Fabric o de la lista de mods en NeoForge). enabled: false deja el HUD de party como en Cobblemon. hudAnchor: TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, RIGHT, BOTTOM_LEFT, BOTTOM o BOTTOM_RIGHT (LEFT es el sitio original). hudOffsetX/hudOffsetY lo separan de ese punto (en píxeles de la interfaz) y hudScale es su tamaño (0.5 a 2). orientation: VERTICAL (como Cobblemon) u HORIZONTAL (los 6 en fila). alignment, con menos de 6 Pokémon: START (izquierda/arriba, cada uno en su ranura), CENTER o END (derecha/abajo). slotColors: color de cada ranura, de la 1 a la 6, en #RRGGBB (#FFFFFF = sin color). slotOpacity: opacidad de las ranuras en % (30 a 100).";
 
 	public boolean enabled = true;
 	public HudAnchor hudAnchor = HudAnchor.LEFT;
@@ -78,6 +82,11 @@ public final class PartyHudConfig {
 	public float hudScale = 1.0f;
 	public Orientation orientation = Orientation.VERTICAL;
 	public Alignment alignment = Alignment.START;
+	/** Color de cada ranura (#RRGGBB), que tiñe solo su panel. */
+	public String[] slotColors = {"#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"};
+	public int slotOpacity = 100;
+	/** slotColors ya leídos como 0xRRGGBB (no se guarda). */
+	private transient int[] slotRgb;
 
 	public static PartyHudConfig load() {
 		PartyHudConfig config = new PartyHudConfig();
@@ -115,10 +124,42 @@ public final class PartyHudConfig {
 		if (hudAnchor == null) hudAnchor = HudAnchor.LEFT;
 		if (orientation == null) orientation = Orientation.VERTICAL;
 		if (alignment == null) alignment = Alignment.START;
+		String[] colors = new String[SLOTS];
+		slotRgb = new int[SLOTS];
+		for (int i = 0; i < SLOTS; i++) {
+			Integer rgb = slotColors != null && i < slotColors.length ? parseColor(slotColors[i]) : null;
+			slotRgb[i] = rgb == null ? NO_COLOR : rgb;
+			colors[i] = formatColor(slotRgb[i]);
+		}
+		slotColors = colors;
+		slotOpacity = Math.clamp(slotOpacity, MIN_OPACITY, 100);
 		hudOffsetX = Math.clamp(hudOffsetX, -MAX_OFFSET, MAX_OFFSET);
 		hudOffsetY = Math.clamp(hudOffsetY, -MAX_OFFSET, MAX_OFFSET);
 		hudScale = Float.isNaN(hudScale) ? 1.0f : Math.clamp(hudScale, MIN_SCALE, MAX_SCALE);
 		return this;
+	}
+
+	/** Color de la ranura (0–5) como 0xRRGGBB. */
+	public int slotColor(int slot) {
+		return slotRgb[slot];
+	}
+
+	public void setSlotColor(int slot, int rgb) {
+		slotRgb[slot] = rgb & 0xFFFFFF;
+		slotColors[slot] = formatColor(slotRgb[slot]);
+	}
+
+	/** "#F09632" o "F09632" → 0xF09632; null si no es un color válido. */
+	public static Integer parseColor(String text) {
+		if (text == null) return null;
+		String hex = text.strip();
+		if (hex.startsWith("#")) hex = hex.substring(1);
+		if (!hex.matches("[0-9a-fA-F]{6}")) return null;
+		return Integer.parseInt(hex, 16);
+	}
+
+	public static String formatColor(int rgb) {
+		return String.format("#%06X", rgb & 0xFFFFFF);
 	}
 
 	/** Guarda el archivo (crea los campos nuevos si faltaban). */

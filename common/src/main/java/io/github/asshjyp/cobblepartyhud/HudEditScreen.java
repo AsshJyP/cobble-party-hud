@@ -73,16 +73,22 @@ public class HudEditScreen extends Screen {
 					dragging = false;
 					rebuildWidgets();
 				})
-				.bounds(width / 2 - BUTTON_WIDTH - 2, y + BUTTON_HEIGHT + 4, BUTTON_WIDTH, BUTTON_HEIGHT)
+				.bounds(left, y + BUTTON_HEIGHT + 4, BUTTON_WIDTH, BUTTON_HEIGHT)
 				.build());
 		// Con menos de 6 Pokémon: juntos al principio (como Cobblemon), en el centro o al final del hueco de 6
 		alignment = addRenderableWidget(Button.builder(alignmentLabel(), button -> {
 					CobblePartyHud.CONFIG.alignment = CobblePartyHud.CONFIG.alignment.next();
 					button.setMessage(alignmentLabel());
 				})
-				.bounds(width / 2 + 2, y + BUTTON_HEIGHT + 4, BUTTON_WIDTH, BUTTON_HEIGHT)
+				.bounds(left + BUTTON_WIDTH + 4, y + BUTTON_HEIGHT + 4, BUTTON_WIDTH, BUTTON_HEIGHT)
 				.build());
 		alignment.active = CobblePartyHud.CONFIG.enabled;
+		// Un color por ranura y la opacidad (solo el panel de la ranura)
+		Button colors = addRenderableWidget(Button.builder(Component.translatable("cobblepartyhud.edit.colors"),
+						button -> minecraft.setScreen(new SlotColorScreen(this)))
+				.bounds(left + (BUTTON_WIDTH + 4) * 2, y + BUTTON_HEIGHT + 4, BUTTON_WIDTH, BUTTON_HEIGHT)
+				.build());
+		colors.active = CobblePartyHud.CONFIG.enabled;
 	}
 
 	private static Component enabledLabel() {

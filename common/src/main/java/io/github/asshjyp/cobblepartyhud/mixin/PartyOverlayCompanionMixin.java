@@ -2,6 +2,7 @@ package io.github.asshjyp.cobblepartyhud.mixin;
 
 import com.cobblemon.mod.common.client.gui.PartyOverlay;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import io.github.asshjyp.cobblepartyhud.SlotColorScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,7 +19,9 @@ public class PartyOverlayCompanionMixin {
 	@ModifyExpressionValue(method = "canRender", remap = false,
 			at = @At(value = "INVOKE", target = "Ljava/util/List;contains(Ljava/lang/Object;)Z", remap = false))
 	private boolean cobblepartyhud$showInHudEditors(boolean exempt) {
-		return exempt || isHudEditor(Minecraft.getInstance().screen);
+		Screen screen = Minecraft.getInstance().screen;
+		// La pantalla de colores también: el HUD real hace de vista previa
+		return exempt || isHudEditor(screen) || screen instanceof SlotColorScreen;
 	}
 
 	/** Convención compartida: clase HudEditScreen en un paquete io.github.asshjyp.* (sin depender de los otros mods). */

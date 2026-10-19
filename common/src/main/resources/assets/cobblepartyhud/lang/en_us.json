@@ -17,5 +17,15 @@
 	"cobblepartyhud.edit.alignment.center": "Center",
 	"cobblepartyhud.edit.alignment.right": "Right",
 	"cobblepartyhud.edit.alignment.top": "Top",
-	"cobblepartyhud.edit.alignment.bottom": "Bottom"
+	"cobblepartyhud.edit.alignment.bottom": "Bottom",
+	"cobblepartyhud.edit.colors": "Colors…",
+	"cobblepartyhud.colors.title": "Slot colors",
+	"cobblepartyhud.colors.slot": "Slot %s",
+	"cobblepartyhud.colors.all": "All at once",
+	"cobblepartyhud.colors.original": "Original (Cobblemon's gray)",
+	"cobblepartyhud.colors.hex": "Code:",
+	"cobblepartyhud.colors.preview": "Preview:",
+	"cobblepartyhud.colors.opacity": "Opacity: %s%%",
+	"cobblepartyhud.colors.reset_slot": "Reset slot",
+	"cobblepartyhud.colors.reset_all": "Reset all"
 }

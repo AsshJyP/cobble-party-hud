@@ -49,6 +49,10 @@ public final class PartyHudTransform {
 	 * (no se mueve y su pestaña no se dibuja). Con START es null y cada slot va en su ranura.
 	 */
 	private static float[] slotTargets;
+	/** Ranura (0–5) que Cobblemon está dibujando, para su color. */
+	private static int currentSlot;
+	/** Color y opacidad de cada ranura en este render (r, g, b, a de 0 a 1), o null si se dibuja como en Cobblemon. */
+	private static final float[][] slotTints = new float[SLOTS][];
 	/** Vertical pegado a la derecha: slots en espejo. */
 	private static boolean mirrored;
 	/** Dibujar el remate en el lado plano de cada slot. */
@@ -189,6 +193,13 @@ public final class PartyHudTransform {
 
 		horizontal = config.orientation == PartyHudConfig.Orientation.HORIZONTAL;
 		slotTargets = slotTargets(config.alignment);
+		float alpha = config.slotOpacity / 100f;
+		for (int i = 0; i < SLOTS; i++) {
+			int rgb = config.slotColor(i);
+			slotTints[i] = rgb == PartyHudConfig.NO_COLOR && alpha >= 1 ? null
+					: new float[]{(rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f, alpha};
+		}
+		currentSlot = 0;
 		// En vertical pegado a la derecha, el slot se dibuja en espejo: su lado plano queda contra el borde derecho
 		mirrored = !horizontal && config.hudAnchor.column == 2;
 		// Remate en el lado plano cuando no toca el borde de la pantalla (en horizontal, siempre)
@@ -237,6 +248,7 @@ public final class PartyHudTransform {
 	 * anterior: aquí pose() es la nuestra (Cobblemon aún no ha hecho push en este slot).
 	 */
 	public static int slotOffset(int offsetY) {
+		if (active) currentSlot = Math.clamp(offsetY / SLOT_STEP_Y, 0, SLOTS - 1);
 		if (!active || (!horizontal && slotTargets == null)) return offsetY;
 		slotHookRan = true;
 		int index = offsetY / SLOT_STEP_Y;
@@ -352,6 +364,17 @@ public final class PartyHudTransform {
 		pose.translate(-x, 0, 0);
 	}
 
+	/**
+	 * Color de la ranura para el panel que se va a dibujar (null si no es un panel de ranura o no lleva color). Se pasa
+	 * en los parámetros de color de blitk, porque blitk pone su propio setShaderColor (blanco por defecto) y lo
+	 * devuelve a blanco al terminar: el retrato, el texto, las barras, la Poké Ball y los avisos no cambian. El panel
+	 * del seleccionado es más claro, así que teñido sigue destacando.
+	 */
+	public static float[] slotTint(ResourceLocation texture) {
+		if (!active || !isSlotBackground(texture)) return null;
+		return slotTints[currentSlot];
+	}
+
 	/** blitk de Cobblemon: escala la pose por scale y dibuja en (x, y) con el ancho dado. */
 	public static void blit(PoseStack pose, ResourceLocation texture, float x, float y, float width, float blitScale, Runnable original) {
 		if (!active) {
@@ -404,12 +427,21 @@ public final class PartyHudTransform {
 		pose.pushPose();
 		pose.translate(x, y, 0);
 		RenderSystem.disableCull();
+		// El remate lleva el color de su ranura (graphics.blit sí usa el setShaderColor actual)
+		float[] tint = slotTints[currentSlot];
+		if (tint != null) {
+			RenderSystem.enableBlend();
+			RenderSystem.setShaderColor(tint[0], tint[1], tint[2], tint[3]);
+		}
 		if (texture.getPath().contains("_active")) {
 			graphics.fill(-1, 1, 0, 27, OUTLINE_COLOR);
 		} else {
 			pose.scale(-1, 1, 1);
 			graphics.blit(texture, 0, 0, 43, 0, CAP_WIDTH, 24, 62, 30);
 			graphics.blit(texture, 0, 24, 53, 24, CAP_WIDTH, 6, 62, 30);
+		}
+		if (tint != null) {
+			RenderSystem.setShaderColor(1, 1, 1, 1);
 		}
 		RenderSystem.enableCull();
 		pose.popPose();

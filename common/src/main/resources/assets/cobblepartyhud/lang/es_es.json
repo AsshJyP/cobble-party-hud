@@ -17,5 +17,15 @@
 	"cobblepartyhud.edit.alignment.center": "Centro",
 	"cobblepartyhud.edit.alignment.right": "Derecha",
 	"cobblepartyhud.edit.alignment.top": "Arriba",
-	"cobblepartyhud.edit.alignment.bottom": "Abajo"
+	"cobblepartyhud.edit.alignment.bottom": "Abajo",
+	"cobblepartyhud.edit.colors": "Colores…",
+	"cobblepartyhud.colors.title": "Colores de las ranuras",
+	"cobblepartyhud.colors.slot": "Ranura %s",
+	"cobblepartyhud.colors.all": "Todas a la vez",
+	"cobblepartyhud.colors.original": "Original (el gris de Cobblemon)",
+	"cobblepartyhud.colors.hex": "Código:",
+	"cobblepartyhud.colors.preview": "Vista previa:",
+	"cobblepartyhud.colors.opacity": "Opacidad: %s %%",
+	"cobblepartyhud.colors.reset_slot": "Restablecer ranura",
+	"cobblepartyhud.colors.reset_all": "Restablecer todas"
 }

@@ -64,10 +64,23 @@ public class PartyOverlayMixin {
 			Number red, Number green, Number blue, Number alpha, boolean blend, float scale, int mask, Object marker,
 			Operation<Void> original) {
 		float blitScale = (mask & (1 << 16)) != 0 ? 1f : scale;
+		float[] tint = PartyHudTransform.slotTint(texture);
+		Runnable draw = tint == null
+				? () -> original.call(pose, texture, x, y, height, width, u, v, textureWidth, textureHeight, blitOffset,
+						red, green, blue, alpha, blend, scale, mask, marker)
+				// Color de la ranura: multiplica el que pase Cobblemon y quita los bits 11–14 (red, green, blue, alpha
+				// por defecto) para que blitk use los nuestros
+				: () -> original.call(pose, texture, x, y, height, width, u, v, textureWidth, textureHeight, blitOffset,
+						channel(red, mask, 11) * tint[0], channel(green, mask, 12) * tint[1],
+						channel(blue, mask, 13) * tint[2], channel(alpha, mask, 14) * tint[3],
+						blend, scale, mask & ~(0xF << 11), marker);
 		PartyHudTransform.blit(pose, texture, x == null ? 0 : x.floatValue(), y == null ? 0 : y.floatValue(),
-				width == null ? 0 : width.floatValue(), blitScale,
-				() -> original.call(pose, texture, x, y, height, width, u, v, textureWidth, textureHeight, blitOffset,
-						red, green, blue, alpha, blend, scale, mask, marker));
+				width == null ? 0 : width.floatValue(), blitScale, draw);
+	}
+
+	/** Valor de un canal de color de blitk$default: 1 si va por defecto (su bit de mask) o es null. */
+	private static float channel(Number value, int mask, int bit) {
+		return (mask & (1 << bit)) != 0 || value == null ? 1f : value.floatValue();
 	}
 
 	/** Nivel y nombre. Bits de mask: 1 = fuente, 5 = escala, 9 = centrado. */
