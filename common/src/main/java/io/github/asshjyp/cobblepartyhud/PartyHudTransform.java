@@ -53,6 +53,8 @@ public final class PartyHudTransform {
 	private static int currentSlot;
 	/** Color y opacidad de cada ranura en este render (r, g, b, a de 0 a 1), o null si se dibuja como en Cobblemon. */
 	private static final float[][] slotTints = new float[SLOTS][];
+	/** Color fijo del seleccionado en este render, o null si es automático (el de su ranura). */
+	private static float[] selectedTint;
 	/** Vertical pegado a la derecha: slots en espejo. */
 	private static boolean mirrored;
 	/** Dibujar el remate en el lado plano de cada slot. */
@@ -199,6 +201,9 @@ public final class PartyHudTransform {
 			slotTints[i] = rgb == PartyHudConfig.NO_COLOR && alpha >= 1 ? null
 					: new float[]{(rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f, alpha};
 		}
+		Integer selected = config.selectedColor();
+		selectedTint = selected == null ? null
+				: new float[]{(selected >> 16 & 0xFF) / 255f, (selected >> 8 & 0xFF) / 255f, (selected & 0xFF) / 255f, alpha};
 		currentSlot = 0;
 		// En vertical pegado a la derecha, el slot se dibuja en espejo: su lado plano queda contra el borde derecho
 		mirrored = !horizontal && config.hudAnchor.column == 2;
@@ -372,7 +377,20 @@ public final class PartyHudTransform {
 	 */
 	public static float[] slotTint(ResourceLocation texture) {
 		if (!active || !isSlotBackground(texture)) return null;
+		return tintFor(texture);
+	}
+
+	/**
+	 * El seleccionado se dibuja con su propia textura ("_active", también la de debilitado): si tiene color fijo, usa
+	 * ese en vez el de su ranura, así el color va con la selección al cambiar con ↑/↓.
+	 */
+	private static float[] tintFor(ResourceLocation texture) {
+		if (selectedTint != null && isSelected(texture)) return selectedTint;
 		return slotTints[currentSlot];
+	}
+
+	private static boolean isSelected(ResourceLocation texture) {
+		return texture.getPath().contains("_active");
 	}
 
 	/** blitk de Cobblemon: escala la pose por scale y dibuja en (x, y) con el ancho dado. */
@@ -428,12 +446,12 @@ public final class PartyHudTransform {
 		pose.translate(x, y, 0);
 		RenderSystem.disableCull();
 		// El remate lleva el color de su ranura (graphics.blit sí usa el setShaderColor actual)
-		float[] tint = slotTints[currentSlot];
+		float[] tint = tintFor(texture);
 		if (tint != null) {
 			RenderSystem.enableBlend();
 			RenderSystem.setShaderColor(tint[0], tint[1], tint[2], tint[3]);
 		}
-		if (texture.getPath().contains("_active")) {
+		if (isSelected(texture)) {
 			graphics.fill(-1, 1, 0, 27, OUTLINE_COLOR);
 		} else {
 			pose.scale(-1, 1, 1);

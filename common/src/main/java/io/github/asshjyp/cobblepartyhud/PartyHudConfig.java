@@ -73,7 +73,7 @@ public final class PartyHudConfig {
 
 	// Gson ignora este campo al leer; solo sirve de ayuda a quien edite el archivo
 	@SuppressWarnings("unused")
-	private String _info = "Lo más cómodo es la pantalla \"Mover y escalar HUD\" (tecla Y, o el botón de configuración de Mod Menu en Fabric o de la lista de mods en NeoForge). enabled: false deja el HUD de party como en Cobblemon. hudAnchor: TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, RIGHT, BOTTOM_LEFT, BOTTOM o BOTTOM_RIGHT (LEFT es el sitio original). hudOffsetX/hudOffsetY lo separan de ese punto (en píxeles de la interfaz) y hudScale es su tamaño (0.5 a 2). orientation: VERTICAL (como Cobblemon) u HORIZONTAL (los 6 en fila). alignment, con menos de 6 Pokémon: START (izquierda/arriba, cada uno en su ranura), CENTER o END (derecha/abajo). slotColors: color de cada ranura, de la 1 a la 6, en #RRGGBB (#FFFFFF = sin color). slotOpacity: opacidad de las ranuras en % (30 a 100).";
+	private String _info = "Lo más cómodo es la pantalla \"Mover y escalar HUD\" (tecla Y, o el botón de configuración de Mod Menu en Fabric o de la lista de mods en NeoForge). enabled: false deja el HUD de party como en Cobblemon. hudAnchor: TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, RIGHT, BOTTOM_LEFT, BOTTOM o BOTTOM_RIGHT (LEFT es el sitio original). hudOffsetX/hudOffsetY lo separan de ese punto (en píxeles de la interfaz) y hudScale es su tamaño (0.5 a 2). orientation: VERTICAL (como Cobblemon) u HORIZONTAL (los 6 en fila). alignment, con menos de 6 Pokémon: START (izquierda/arriba, cada uno en su ranura), CENTER o END (derecha/abajo). slotColors: color de cada ranura, de la 1 a la 6, en #RRGGBB (#FFFFFF = sin color). slotOpacity: opacidad de las ranuras en % (30 a 100). selectedColor: color fijo del Pokémon seleccionado (#RRGGBB), o vacío para el automático (el de su ranura, más claro).";
 
 	public boolean enabled = true;
 	public HudAnchor hudAnchor = HudAnchor.LEFT;
@@ -85,8 +85,12 @@ public final class PartyHudConfig {
 	/** Color de cada ranura (#RRGGBB), que tiñe solo su panel. */
 	public String[] slotColors = {"#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"};
 	public int slotOpacity = 100;
+	/** Color fijo del panel del seleccionado (#RRGGBB); vacío = automático (el de su ranura, más claro). */
+	public String selectedColor = "";
 	/** slotColors ya leídos como 0xRRGGBB (no se guarda). */
 	private transient int[] slotRgb;
+	/** selectedColor ya leído, o null si es automático (no se guarda). */
+	private transient Integer selectedRgb;
 
 	public static PartyHudConfig load() {
 		PartyHudConfig config = new PartyHudConfig();
@@ -133,6 +137,7 @@ public final class PartyHudConfig {
 		}
 		slotColors = colors;
 		slotOpacity = Math.clamp(slotOpacity, MIN_OPACITY, 100);
+		setSelectedColor(parseColor(selectedColor));
 		hudOffsetX = Math.clamp(hudOffsetX, -MAX_OFFSET, MAX_OFFSET);
 		hudOffsetY = Math.clamp(hudOffsetY, -MAX_OFFSET, MAX_OFFSET);
 		hudScale = Float.isNaN(hudScale) ? 1.0f : Math.clamp(hudScale, MIN_SCALE, MAX_SCALE);
@@ -147,6 +152,17 @@ public final class PartyHudConfig {
 	public void setSlotColor(int slot, int rgb) {
 		slotRgb[slot] = rgb & 0xFFFFFF;
 		slotColors[slot] = formatColor(slotRgb[slot]);
+	}
+
+	/** Color fijo del seleccionado como 0xRRGGBB, o null si es automático. */
+	public Integer selectedColor() {
+		return selectedRgb;
+	}
+
+	/** null = automático. */
+	public void setSelectedColor(Integer rgb) {
+		selectedRgb = rgb == null ? null : rgb & 0xFFFFFF;
+		selectedColor = selectedRgb == null ? "" : formatColor(selectedRgb);
 	}
 
 	/** "#F09632" o "F09632" → 0xF09632; null si no es un color válido. */

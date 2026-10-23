@@ -26,10 +26,16 @@ public class SlotColorScreen extends Screen {
 			0x48C060, 0x38C0C0, 0x4080E8, 0xA060E0, 0xF070B8, 0x8A5A30};
 	/** Valor de {@link #target} para cambiar las 6 ranuras a la vez. */
 	private static final int ALL = -1;
+	/** Valor de {@link #target} para el color del Pokémon seleccionado (va con la selección, no con una ranura). */
+	private static final int SELECTED = -2;
+	/** Color con el que empieza el modo "Color fijo" del seleccionado. */
+	private static final int DEFAULT_SELECTED = 0xF0D040;
 	private static final int PANEL_WIDTH = 300;
 	private static final int PANEL_HEIGHT = 182;
 	private static final ResourceLocation SLOT_TEXTURE =
 			ResourceLocation.fromNamespaceAndPath("cobblemon", "textures/gui/party/party_slot.png");
+	private static final ResourceLocation SELECTED_TEXTURE =
+			ResourceLocation.fromNamespaceAndPath("cobblemon", "textures/gui/party/party_slot_active.png");
 
 	private final Screen parent;
 	private int target = 0;
@@ -51,9 +57,22 @@ public class SlotColorScreen extends Screen {
 		return CobblePartyHud.CONFIG;
 	}
 
-	/** Color que muestran los controles: el de la ranura elegida (con "Todas", el de la primera). */
+	/**
+	 * Color que muestran los controles: el de la ranura elegida (con "Todas", el de la primera; con "Seleccionado"
+	 * en automático, blanco).
+	 */
 	private int currentColor() {
+		if (target == SELECTED) {
+			Integer selected = config().selectedColor();
+			return selected == null ? PartyHudConfig.NO_COLOR : selected;
+		}
 		return config().slotColor(target == ALL ? 0 : target);
+	}
+
+	/** Seleccionado en modo automático: ningún predefinido aparece marcado. */
+	private boolean isCurrent(int color) {
+		if (target == SELECTED && config().selectedColor() == null) return false;
+		return currentColor() == color;
 	}
 
 	@Override
@@ -63,19 +82,24 @@ public class SlotColorScreen extends Screen {
 		int y = top + 14;
 		for (int i = 0; i < PartyHudTransform.SLOTS; i++) {
 			int slot = i;
-			addRenderableWidget(new Swatch(left + i * 24, y, 20, 20, String.valueOf(i + 1),
+			addRenderableWidget(new Swatch(left + i * 22, y, 20, 20, String.valueOf(i + 1),
 					() -> config().slotColor(slot), () -> target == slot, ignored -> select(slot)))
 					.setTooltip(Tooltip.create(Component.translatable("cobblepartyhud.colors.slot", i + 1)));
 		}
+		Button selected = addRenderableWidget(Button.builder(Component.translatable("cobblepartyhud.colors.selected"),
+						button -> select(SELECTED))
+				.bounds(left + 134, y, 82, 20).build());
+		selected.active = target != SELECTED;
+		selected.setTooltip(Tooltip.create(Component.translatable("cobblepartyhud.colors.selected.tooltip")));
 		Button all = addRenderableWidget(Button.builder(Component.translatable("cobblepartyhud.colors.all"), button -> select(ALL))
-				.bounds(left + 150, y, 100, 20).build());
+				.bounds(left + 218, y, 82, 20).build());
 		all.active = target != ALL;
 
 		y = top + 40;
 		for (int i = 0; i < PRESETS.length; i++) {
 			int color = PRESETS[i];
 			Swatch swatch = addRenderableWidget(new Swatch(left + i * 19, y, 16, 16, "", () -> color,
-					() -> currentColor() == color, ignored -> applyAndSync(color)));
+					() -> isCurrent(color), ignored -> applyAndSync(color)));
 			if (color == PartyHudConfig.NO_COLOR) {
 				swatch.setTooltip(Tooltip.create(Component.translatable("cobblepartyhud.colors.original")));
 			}
@@ -100,18 +124,39 @@ public class SlotColorScreen extends Screen {
 
 		addRenderableWidget(new OpacitySlider(left, y + 66));
 
+		if (target == SELECTED) {
+			// Automático: el color de su ranura, más claro (como Cobblemon con el gris). Color fijo: el elegido aquí.
+			addRenderableWidget(Button.builder(selectedModeLabel(), button -> {
+						config().setSelectedColor(config().selectedColor() == null ? DEFAULT_SELECTED : null);
+						rebuildWidgets();
+					})
+					.bounds(left + 182, top + 138, 118, 20).build());
+		}
+
 		y = top + PANEL_HEIGHT - 20;
-		addRenderableWidget(Button.builder(Component.translatable("cobblepartyhud.colors.reset_slot"),
-						button -> applyAndSync(PartyHudConfig.NO_COLOR))
+		addRenderableWidget(Button.builder(Component.translatable("cobblepartyhud.colors.reset_slot"), button -> {
+					if (target == SELECTED) {
+						config().setSelectedColor(null);
+						rebuildWidgets();
+					} else {
+						applyAndSync(PartyHudConfig.NO_COLOR);
+					}
+				})
 				.bounds(left, y, 98, 20).build());
 		addRenderableWidget(Button.builder(Component.translatable("cobblepartyhud.colors.reset_all"), button -> {
 					for (int i = 0; i < PartyHudTransform.SLOTS; i++) config().setSlotColor(i, PartyHudConfig.NO_COLOR);
+					config().setSelectedColor(null);
 					config().slotOpacity = 100;
 					rebuildWidgets();
 				})
 				.bounds(left + 101, y, 98, 20).build());
 		addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose())
 				.bounds(left + 202, y, 98, 20).build());
+	}
+
+	private static Component selectedModeLabel() {
+		return Component.translatable(config().selectedColor() == null
+				? "cobblepartyhud.colors.selected.auto" : "cobblepartyhud.colors.selected.fixed");
 	}
 
 	private void select(int slot) {
@@ -121,7 +166,12 @@ public class SlotColorScreen extends Screen {
 
 	/** Cambia el color de la ranura elegida (o de todas). */
 	private void apply(int rgb) {
-		if (target == ALL) {
+		if (target == SELECTED) {
+			// Elegir un color pasa el seleccionado a "Color fijo"
+			boolean wasAuto = config().selectedColor() == null;
+			config().setSelectedColor(rgb);
+			if (wasAuto) rebuildWidgets();
+		} else if (target == ALL) {
 			for (int i = 0; i < PartyHudTransform.SLOTS; i++) config().setSlotColor(i, rgb);
 		} else {
 			config().setSlotColor(target, rgb);
@@ -174,10 +224,14 @@ public class SlotColorScreen extends Screen {
 	private void renderPreview(GuiGraphics graphics, int x, int y) {
 		graphics.fill(x - 2, y - 2, x + 64, y + 32, 0xFF7FAEF0);
 		int rgb = currentColor();
+		boolean selectedPreview = target == SELECTED;
+		if (selectedPreview && config().selectedColor() == null) {
+			rgb = config().slotColor(0); // automático: así se vería en la ranura 1
+		}
 		RenderSystem.enableBlend();
 		RenderSystem.setShaderColor((rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f,
 				config().slotOpacity / 100f);
-		graphics.blit(SLOT_TEXTURE, x, y, 0, 0, 62, 30, 62, 30);
+		graphics.blit(selectedPreview ? SELECTED_TEXTURE : SLOT_TEXTURE, x, y, 0, 0, 62, 30, 62, 30);
 		RenderSystem.setShaderColor(1, 1, 1, 1);
 		RenderSystem.disableBlend();
 	}

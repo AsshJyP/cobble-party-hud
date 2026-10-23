@@ -27,5 +27,9 @@
 	"cobblepartyhud.colors.preview": "Preview:",
 	"cobblepartyhud.colors.opacity": "Opacity: %s%%",
 	"cobblepartyhud.colors.reset_slot": "Reset slot",
-	"cobblepartyhud.colors.reset_all": "Reset all"
+	"cobblepartyhud.colors.reset_all": "Reset all",
+	"cobblepartyhud.colors.selected": "Selected",
+	"cobblepartyhud.colors.selected.tooltip": "Color of the selected Pokémon (↑/↓). It moves with the selection.",
+	"cobblepartyhud.colors.selected.auto": "Mode: Automatic",
+	"cobblepartyhud.colors.selected.fixed": "Mode: Fixed color"
 }

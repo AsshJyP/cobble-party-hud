@@ -7,7 +7,7 @@ Mod **solo de cliente** para Minecraft **1.21.1 (Fabric y NeoForge)** con **Cobb
 - Se pega al punto más cercano de la pantalla (esquinas, centro de cada borde o centro), así se adapta a otra resolución o escala de interfaz.
 - Forma **vertical** (como Cobblemon) u **horizontal** (los seis en fila, con los avisos de nivel arriba o abajo).
 - **Alineación** con menos de 6 Pokémon: izquierda/centro/derecha en horizontal y arriba/centro/abajo en vertical. Con centro o derecha/abajo, los Pokémon se juntan dentro del hueco de 6 y sus avisos (nivel, "+N EXP", evolución) van con ellos.
-- **Colores** (botón "Colores…" del editor): un color por ranura o el mismo para todas, con 12 predefinidos, barras R/G/B y código hex, más la opacidad de las ranuras (30–100 %). Solo se tiñe el panel de la ranura; el retrato, el texto, las barras y los avisos no cambian.
+- **Colores** (botón "Colores…" del editor): un color por ranura o el mismo para todas, con 12 predefinidos, barras R/G/B y código hex, más la opacidad de las ranuras (30–100 %). El Pokémon seleccionado (↑/↓) puede ir en automático (el color de su ranura, más claro) o con un color fijo propio que se mueve con la selección. Solo se tiñe el panel de la ranura; el retrato, el texto, las barras y los avisos no cambian.
 - Pegado a la derecha, los slots se dibujan **en espejo** para que su lado plano quede contra el borde.
 - Botón para desactivarlo: el HUD vuelve a su sitio original sin perder tu posición.
 - En la pantalla de colocación se ven también los HUD de Cobble Hunt Log y Cobble EV Tracker, si están instalados, para colocarlos juntos.

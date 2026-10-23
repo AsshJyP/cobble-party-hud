@@ -27,5 +27,9 @@
 	"cobblepartyhud.colors.preview": "Vista previa:",
 	"cobblepartyhud.colors.opacity": "Opacidad: %s %%",
 	"cobblepartyhud.colors.reset_slot": "Restablecer ranura",
-	"cobblepartyhud.colors.reset_all": "Restablecer todas"
+	"cobblepartyhud.colors.reset_all": "Restablecer todas",
+	"cobblepartyhud.colors.selected": "Seleccionado",
+	"cobblepartyhud.colors.selected.tooltip": "Color del Pokémon seleccionado (↑/↓). Se mueve con la selección.",
+	"cobblepartyhud.colors.selected.auto": "Modo: Automático",
+	"cobblepartyhud.colors.selected.fixed": "Modo: Color fijo"
 }
